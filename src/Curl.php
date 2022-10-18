@@ -19,21 +19,19 @@ abstract class Curl {
      * @throws Exception
      * @param string $url
      * @param string $method
-     * @param array $data
+     * @param string|array $data
      * @param array $headers
      * @return object
      */
-    public static function generate(string $url, string $method, array $data = array(), array $headers = array()): CurlHandle {
+    public static function generate(string $url, string $method, string|array $data = array(), array $headers = array()): CurlHandle {
 
-        if( $data AND is_array($data)
-            AND in_array($method, array('HEAD', 'GET', 'DELETE')) ){
+        if( is_array($data) ){
+            $data = http_build_query($data);
+        }
 
-            if( strpos('?', $url) ){
-                $url .= '&'. http_build_query($data);
-            }else{
-                $url .= '?'. http_build_query($data);
-            }
-
+        if( $data !== '' AND in_array($method, array('HEAD', 'GET', 'DELETE')) ){
+            $url .= strpos('?', $url) ? '&' : '?';
+            $url .= $data;    
         }
 
         $curl = curl_init();
@@ -58,17 +56,12 @@ abstract class Curl {
         // POST
         if( $method === 'POST' ){
 
-            if( is_array($data) ){
-                $data = http_build_query($data);
-            }
-
             curl_setopt($curl, CURLOPT_POST, true);
             curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
 
         // PUT
         }elseif( $method === 'PUT' ){
 
-            // $data = http_build_query($data);
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PUT');
             curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
 
@@ -85,11 +78,11 @@ abstract class Curl {
      * Make HTTP request on client
      * @param string $url
      * @param string $method
-     * @param array $data
+     * @param string|array $data
      * @param array $headers
      * @return string
      */
-    public static function makeRequest(string $url, string $method = "POST", array $data = array(), array $headers = array()): string {
+    public static function makeRequest(string $url, string $method = "POST", string|array $data = array(), array $headers = array()): string {
 
         $curl = self::generate($url, $method, $data, $headers);
         $response = curl_exec($curl);
@@ -105,44 +98,44 @@ abstract class Curl {
     /**
      * Make HTTP GET request
      * @param string $url
-     * @param array $params
+     * @param string|array $params
      * @param array $headers
      * @return string
      */
-    public static function get(string $url, array $params = array(), array $headers = array()): string {
+    public static function get(string $url, string|array $params = array(), array $headers = array()): string {
         return self::makeRequest($url, 'GET', $params, $headers);
     }
 
     /**
      * Make HTTP POST request
      * @param string $url
-     * @param array $params
+     * @param string|array $data
      * @param array $headers
      * @return string
      */
-    public static function post(string $url, array $data, array $headers = array()): string {
+    public static function post(string $url, string|array $data, array $headers = array()): string {
         return self::makeRequest($url, 'POST', $data, $headers);
     }
 
     /**
      * Make HTTP PUT request
      * @param string $url
-     * @param array $data
+     * @param string|array $data
      * @param array $headers
      * @return string
      */
-    public static function put(string $url, array $data, array $headers = array()): string {
+    public static function put(string $url, string|array $data, array $headers = array()): string {
         return self::makeRequest($url, 'PUT', $data, $headers);
     }
 
     /**
      * Make HTTP DELETE request
      * @param string $url
-     * @param array $params
+     * @param string|array $params
      * @param array $headers
      * @return string
      */
-    public static function delete(string $url, array $params = array(), array $headers = array()): string {
+    public static function delete(string $url, string|array $params = array(), array $headers = array()): string {
         return self::makeRequest($url, 'DELETE', $params, $headers);
     }
 
