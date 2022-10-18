@@ -1,6 +1,10 @@
 <?php
+declare(strict_types=1);
 
 namespace Orbital\Utils;
+
+use \Exception;
+use \CurlHandle;
 
 abstract class Curl {
 
@@ -12,13 +16,14 @@ abstract class Curl {
 
     /**
      * Generate CURL request object
+     * @throws Exception
      * @param string $url
      * @param string $method
      * @param array $data
      * @param array $headers
      * @return object
      */
-    public static function generate($url, $method, $data = array(), $headers = array()){
+    public static function generate(string $url, string $method, array $data = array(), array $headers = array()): CurlHandle {
 
         if( $data AND is_array($data)
             AND in_array($method, array('HEAD', 'GET', 'DELETE')) ){
@@ -33,14 +38,18 @@ abstract class Curl {
 
         $curl = curl_init();
 
+        if( $curl === false ){
+            throw new Exception('CURL connection could not be generated');
+        }
+
         curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_HEADER, FALSE);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, self::$timeout);
         curl_setopt($curl, CURLOPT_TIMEOUT, self::$timeout);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
 
         if( $headers ){
             curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
@@ -53,7 +62,7 @@ abstract class Curl {
                 $data = http_build_query($data);
             }
 
-            curl_setopt($curl, CURLOPT_POST, TRUE);
+            curl_setopt($curl, CURLOPT_POST, true);
             curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
 
         // PUT
@@ -78,16 +87,15 @@ abstract class Curl {
      * @param string $method
      * @param array $data
      * @param array $headers
-     * @return array
+     * @return string
      */
-    public static function makeRequest($url, $method = "POST", $data = array(), $headers = array()){
+    public static function makeRequest(string $url, string $method = "POST", array $data = array(), array $headers = array()): string {
 
         $curl = self::generate($url, $method, $data, $headers);
-
         $response = curl_exec($curl);
-        $info = curl_getinfo($curl);
-        $error = curl_errno($curl);
-        $errorMessage = curl_error($curl);
+        // $info = curl_getinfo($curl);
+        // $error = curl_errno($curl);
+        // $errorMessage = curl_error($curl);
 
         curl_close($curl);
 
@@ -99,9 +107,9 @@ abstract class Curl {
      * @param string $url
      * @param array $params
      * @param array $headers
-     * @return mixed
+     * @return string
      */
-    public static function get($url, $params = array(), $headers = array()){
+    public static function get(string $url, array $params = array(), array $headers = array()): string {
         return self::makeRequest($url, 'GET', $params, $headers);
     }
 
@@ -110,9 +118,9 @@ abstract class Curl {
      * @param string $url
      * @param array $params
      * @param array $headers
-     * @return mixed
+     * @return string
      */
-    public static function post($url, $data, $headers = array()){
+    public static function post(string $url, array $data, array $headers = array()): string {
         return self::makeRequest($url, 'POST', $data, $headers);
     }
 
@@ -121,9 +129,9 @@ abstract class Curl {
      * @param string $url
      * @param array $data
      * @param array $headers
-     * @return mixed
+     * @return string
      */
-    public static function put($url, $data, $headers = array()){
+    public static function put(string $url, array $data, array $headers = array()): string {
         return self::makeRequest($url, 'PUT', $data, $headers);
     }
 
@@ -132,9 +140,9 @@ abstract class Curl {
      * @param string $url
      * @param array $params
      * @param array $headers
-     * @return mixed
+     * @return string
      */
-    public static function delete($url, $params = array(), $headers = array()){
+    public static function delete(string $url, array $params = array(), array $headers = array()): string {
         return self::makeRequest($url, 'DELETE', $params, $headers);
     }
 
