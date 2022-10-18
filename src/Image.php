@@ -6,7 +6,6 @@ namespace Core\Helper;
 use \Exception;
 use \GdImage;
 use \Orbital\Http\Router;
-use \Orbital\I18n\Translator;
 
 abstract class Image {
 
@@ -98,11 +97,7 @@ abstract class Image {
         }
 
         if( !$resource ){
-            throw new Exception(
-                Translator::__('Image resource could not be determined for "%file".', array(
-                    '%file' => $src
-                ))
-            );
+            throw new Exception('Image resource could not be determined for "'. $src. '" file.');
         }
 
         // Adjust orientation

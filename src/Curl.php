@@ -39,7 +39,7 @@ abstract class Curl {
         $curl = curl_init();
 
         if( $curl === false ){
-            throw new Exception('CURL connection could not be generated');
+            throw new Exception('CURL connection could not be generated.');
         }
 
         curl_setopt($curl, CURLOPT_URL, $url);
