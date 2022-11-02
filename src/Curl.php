@@ -50,7 +50,17 @@ abstract class Curl {
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
 
         if( $headers ){
-            curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+            
+            $header = array();
+            foreach( $headers as $key => $value ){
+                if( is_numeric($key) ){
+                    $header[] = $value;
+                }else{
+                    $header[] = $key. ': '. $value;
+                }
+            }
+            
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
         }
 
         // POST
@@ -80,19 +90,26 @@ abstract class Curl {
      * @param string $method
      * @param string|array $data
      * @param array $headers
-     * @return string
+     * @return array
      */
-    public static function makeRequest(string $url, string $method = "POST", string|array $data = array(), array $headers = array()): string {
+    public static function makeRequest(string $url, string $method = 'POST', string|array $data = array(), array $headers = array()): array {
 
         $curl = self::generate($url, $method, $data, $headers);
         $response = curl_exec($curl);
-        // $info = curl_getinfo($curl);
-        // $error = curl_errno($curl);
-        // $errorMessage = curl_error($curl);
+        $info = curl_getinfo($curl);
+        $error = curl_errno($curl);
 
         curl_close($curl);
 
-        return $response;
+        if( $error ){
+            $errorMessage = curl_strerror($error);
+            throw new Exception($errorMessage);
+        }
+
+        return array(
+            'response' => $response,
+            'info' => $info
+        );
     }
 
     /**
@@ -100,9 +117,9 @@ abstract class Curl {
      * @param string $url
      * @param string|array $params
      * @param array $headers
-     * @return string
+     * @return array
      */
-    public static function get(string $url, string|array $params = array(), array $headers = array()): string {
+    public static function get(string $url, string|array $params = array(), array $headers = array()): array {
         return self::makeRequest($url, 'GET', $params, $headers);
     }
 
@@ -111,9 +128,9 @@ abstract class Curl {
      * @param string $url
      * @param string|array $data
      * @param array $headers
-     * @return string
+     * @return array
      */
-    public static function post(string $url, string|array $data, array $headers = array()): string {
+    public static function post(string $url, string|array $data, array $headers = array()): array {
         return self::makeRequest($url, 'POST', $data, $headers);
     }
 
@@ -122,9 +139,9 @@ abstract class Curl {
      * @param string $url
      * @param string|array $data
      * @param array $headers
-     * @return string
+     * @return array
      */
-    public static function put(string $url, string|array $data, array $headers = array()): string {
+    public static function put(string $url, string|array $data, array $headers = array()): array {
         return self::makeRequest($url, 'PUT', $data, $headers);
     }
 
@@ -133,9 +150,9 @@ abstract class Curl {
      * @param string $url
      * @param string|array $params
      * @param array $headers
-     * @return string
+     * @return array
      */
-    public static function delete(string $url, string|array $params = array(), array $headers = array()): string {
+    public static function delete(string $url, string|array $params = array(), array $headers = array()): array {
         return self::makeRequest($url, 'DELETE', $params, $headers);
     }
 
