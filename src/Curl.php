@@ -30,7 +30,7 @@ abstract class Curl {
         }
 
         if( $data !== '' AND in_array($method, array('HEAD', 'GET', 'DELETE')) ){
-            $url .= strpos('?', $url) ? '&' : '?';
+            $url .= strpos($url, '?') !== false ? '&' : '?';
             $url .= $data;    
         }
 
